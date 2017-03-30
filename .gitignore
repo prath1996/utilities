@@ -1,0 +1,115 @@
+import random as r
+import math as m
+
+# xi0 ---> inputs
+# yd ---> single output
+# wi2i1 ---> weights linking 1st hidden layer to output
+# bias has been added in input layer as well as in hidden layer
+# derivation of weight modification has been omitted
+
+n1 = 2
+
+# ASSIGNING WEIGHTS
+# initializing 1st weight of layer 2 and layer 1 respectively
+wi2 = [x for x in range(n1+1)]
+
+for i in range(0, n1+1):
+    wi2[i] = r.randint(0, 9)*0.01
+
+wi1 = [[x for x in range(3)] for y in range(n1)]
+
+for i in range(0, n1):
+    for j in range(0, 3):
+        wi1[i][j] = r.randint(0, 9) * 0.01
+
+
+# learning rate = n
+n = .94
+
+# TRAINING SET
+
+# inputs
+xi0 = [[0.1, 0.1, 0.1], [0.1, .9, 0.1], [.9, 0.1, 0.1], [.9, .9, 0.1]]
+# 3rd input in every pattern is bias which is taken to be zero in each case
+
+# desired output
+yd = [0.1, .9, .9, 0.1]
+y = [x for x in range(0, 4)]
+# COMPUTING vi1 and yi2
+vi1 = [x for x in range(n1+1)]
+E = 1
+
+count = 0
+while E > 10**(-10):
+    E = 0
+    for k in range(0, 4):
+
+        for j in range(0, n1):
+            hi1 = 0
+            for i in range(0, 3):
+                hi1 += (wi1[j][i]) * xi0[k][i]
+            vi1[j] = (1 + m.exp(-hi1))**(-1)
+
+        vi1[n1] = 0.1
+        hi2 = 0
+        for i in range(0, n1+1):
+            hi2 += (wi2[i]) * vi1[i]
+        y[k] = (1 + m.exp(-hi2))**(-1)
+
+        # Updating wi2i1
+        for i1 in range(0, n1+1):
+            wi2[i1] += n * y[k] * (1 - y[k]) * (yd[k] - y[k]) * vi1[i1]
+        delta = (yd[k] - y[k]) * (1 - y[k]) * y[k]
+
+        # Updating wi1i0
+        for i1 in range(0, n1):
+            for i0 in range(0, 3):
+                wi1[i1][i0] += n * delta * wi2[i1] * vi1[i1] * (1 - vi1[i1]) * xi0[k][i0]
+
+        # Getting new vi1
+        for j in range(0, n1):
+            hi1 = 0
+            for i in range(0, 3):
+                hi1 += (wi1[j][i]) * xi0[k][i]
+            vi1[j] = (1 + m.exp(-hi1))**(-1)
+
+        # Getting new y
+        hi2 = 0
+        for i in range(0, n1+1):
+            hi2 += (wi2[i]) * vi1[i]
+
+        y[k] = (1 + m.exp(-hi2))**(-1)
+
+        E += .5 * m.pow((yd[k] - y[k]), 2)
+    count += 1
+
+print(count)
+print(y)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
