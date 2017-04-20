@@ -1,0 +1,38 @@
+import cv2
+import numpy as np
+
+# Read image
+im = cv2.imread('path to image', cv2.IMREAD_GRAYSCALE)
+im = cv2.resize(im, (299,299))
+
+# Some preprocessing
+kernel = np.ones((2,2),np.uint8)
+erosion = cv2.erode(im,kernel,iterations = 1)
+opening = cv2.morphologyEx(im, cv2.MORPH_OPEN, kernel)
+im = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, kernel)
+
+# Getting edges
+edged = cv2.Canny(im, 50, 140)
+
+# Using edged image to get contours
+_, contours, hierarchy = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+# Sorting done for experimental purpose, might come handy for future modifications
+cnts = sorted(contours, key = cv2.contourArea, reverse = True)
+
+# perimeter of contour, aspect ratio of enclosing rectangle and length of approximating polygon are the parameters used to decide no. of lemons
+count = 0
+for c in cnts:
+	peri = cv2.arcLength(c, True)
+	approx = cv2.approxPolyDP(c, 0.01 * peri, True)
+	x, y, w, h = cv2.boundingRect(c)
+	aspect_ratio = float(w) / h
+
+	if peri > 150 and aspect_ratio < 4 and len(approx) > 11:
+		count += 1
+
+# printing result
+print('lemons found = ', count)
+cv2.drawContours(im, cnts, -1, (0, 255, 0), 3)
+cv2.imshow("All contours", im)
+cv2.waitKey(0)
